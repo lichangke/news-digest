@@ -1,0 +1,24 @@
+{
+  "timezone": "Asia/Shanghai",
+  "max_items": 10,
+  "run_on_weekends": true,
+  "domain": "general",
+  "feishu": {
+    "owner_open_id": "ou_846a1fe0812c0797c456361b253e1fbc",
+    "folder_token": "PLEASE_FILL_ME",
+    "notify_chat_type": "p2p"
+  },
+  "sources": {
+    "preferred": [
+      "xinhua",
+      "people",
+      "cctv",
+      "thepaper",
+      "jiemian"
+    ]
+  },
+  "dedupe": {
+    "title_similarity_threshold": 92,
+    "event_similarity_threshold": 88
+  }
+}

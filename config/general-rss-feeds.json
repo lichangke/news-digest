@@ -1,0 +1,18 @@
+{
+  "china_primary": [
+    "http://rss.xinhuanet.com/rss/native.xml",
+    "http://rss.xinhuanet.com/rss/world.xml",
+    "http://www.people.com.cn/rss/politics.xml",
+    "http://www.people.com.cn/rss/society.xml",
+    "http://www.people.com.cn/rss/world.xml",
+    "http://www.cctv.com/program/rss/02/01/index.xml",
+    "http://www.cctv.com/program/rss/02/02/index.xml",
+    "https://www.thepaper.cn/rss.xml",
+    "https://a.jiemian.com/index.php?m=article&a=rss"
+  ],
+  "international_secondary": [
+    "https://feeds.reuters.com/reuters/worldNews",
+    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    "https://feeds.bbci.co.uk/news/world/rss.xml"
+  ]
+}

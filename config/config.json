@@ -1,0 +1,79 @@
+{
+  "timezone": "Asia/Shanghai",
+  "max_items": 10,
+  "run_on_weekends": true,
+  "channels": {
+    "general": {
+      "enabled": true,
+      "label": "综合热点",
+      "max_items": 8,
+      "sources": {
+        "preferred": [
+          "xinhua",
+          "people",
+          "cctv",
+          "thepaper",
+          "jiemian"
+        ],
+        "rss": {
+          "china_primary": [
+            "http://rss.xinhuanet.com/rss/native.xml",
+            "http://rss.xinhuanet.com/rss/world.xml",
+            "http://www.people.com.cn/rss/politics.xml",
+            "http://www.people.com.cn/rss/society.xml",
+            "http://www.people.com.cn/rss/world.xml",
+            "http://www.cctv.com/program/rss/02/01/index.xml",
+            "http://www.cctv.com/program/rss/02/02/index.xml",
+            "https://www.thepaper.cn/rss.xml",
+            "https://a.jiemian.com/index.php?m=article&a=rss"
+          ],
+          "international_secondary": [
+            "https://feeds.reuters.com/reuters/worldNews",
+            "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+            "https://feeds.bbci.co.uk/news/world/rss.xml"
+          ]
+        },
+        "search": {
+          "tavily": true,
+          "multi_search_engine": true
+        }
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "label": "AI / 大模型",
+      "max_items": 12,
+      "wiki_title_suffix": "AI / 大模型晚间汇总",
+      "sources": {
+        "rss": [
+          "https://36kr.com/feed",
+          "https://www.jiqizhixin.com/rss",
+          "https://www.qbitai.com/rss",
+          "https://zhidx.com/rss",
+          "https://www.leiphone.com/feed",
+          "https://www.aibase.com/zh/rss",
+          "https://openai.com/blog/rss.xml",
+          "https://www.anthropic.com/rss",
+          "https://www.technologyreview.com/feed",
+          "https://techcrunch.com/category/artificial-intelligence/feed",
+          "https://hnrss.org/best",
+          "http://export.arxiv.org/rss/cs.AI",
+          "https://github.com/trending/ai.atom",
+          "https://www.reddit.com/r/MachineLearning/.rss",
+          "https://rsshub.app/weibo/hot",
+          "https://rsshub.app/zhihu/topic/19552832"
+        ]
+      }
+    }
+  },
+  "feishu": {
+    "owner_open_id": "ou_846a1fe0812c0797c456361b253e1fbc",
+    "wiki_space_id": "7616701619421318325",
+    "wiki_root_node_token": "NIv7wba7Rif1iZkP4ivcgJZKnZb",
+    "notify_chat_type": "p2p"
+  },
+  "dedupe": {
+    "title_similarity_threshold": 92,
+    "event_similarity_threshold": 88
+  }
+}
