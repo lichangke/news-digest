@@ -86,7 +86,8 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
     }
 
     try:
-        candidates = make_demo_items(tz_name) if demo else fetch_candidate_news(channel, start_at, end_at, channel_config, tz_name)
+        raw_candidates = make_demo_items(tz_name) if demo else fetch_candidate_news(channel, start_at, end_at, channel_config, tz_name)
+        candidates = channel_strategy.apply_quality_policy(raw_candidates, channel_strategy.quality_policy)
         deduped = dedupe_items(candidates, title_threshold=config["dedupe"]["title_similarity_threshold"])
 
         conn = get_conn()
@@ -111,6 +112,11 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
         result["channel_strategy"] = {
             "name": channel_strategy.name,
             "label_fallback": channel_strategy.label_fallback,
+            "quality_policy": {
+                "channel": channel_strategy.quality_policy.channel,
+                "max_priority_keep": channel_strategy.quality_policy.max_priority_keep,
+                "drop_candidate_only": channel_strategy.quality_policy.drop_candidate_only,
+            },
         }
         result["counts"] = {
             "candidates": len(candidates),
