@@ -10,6 +10,7 @@ import requests
 from .china_sources import CHINA_SOURCE_ADAPTERS
 from .dedupe import fingerprint_from_text, normalize_title
 from .models import NewsItem
+from .quality_rules import evaluate_jiemian_quality, is_cctv_summary_fragment_allowed
 
 
 def fetch_from_china_adapters(start_at: datetime, end_at: datetime, tz_name: str) -> List[NewsItem]:
@@ -65,8 +66,7 @@ def fetch_cctv_detail_item(detail_url: str, start_at: datetime, end_at: datetime
         text = re.sub(r'<[^>]+>', '', para)
         text = text.replace('&ldquo;', '“').replace('&rdquo;', '”').replace('&nbsp;', ' ')
         text = re.sub(r'\s+', ' ', text).strip(' \u3000')
-        blocked_fragments = ['var isHttps', 'playerParas', '播放器', 'videoCenterId', 'guid =', 'share_log']
-        if any(fragment in text for fragment in blocked_fragments):
+        if not is_cctv_summary_fragment_allowed(text):
             continue
         if len(text) >= 20 and re.search(r'[\u4e00-\u9fff]', text):
             summary = text[:180]
@@ -223,15 +223,8 @@ def fetch_jiemian_detail_item(detail_url: str, start_at: datetime, end_at: datet
             if len(text) >= 20 and re.search(r'[\u4e00-\u9fff]', text) and '界面快报' not in text:
                 summary = text[:180]
                 break
-    whitelist_hit = any(keyword in title or keyword in summary for keyword in whitelist_keywords)
-    strong_blacklist_hit = any(keyword.lower() in lower_title for keyword in ['· 证券', '商业头条', '财说', '投资早报', '独家', '深度'])
-    if strong_blacklist_hit:
-        return None
-    if not whitelist_hit:
-        return None
-    if any(keyword in summary for keyword in blocked_summary_keywords) and not whitelist_hit:
-        return None
-    if ('界面新闻记者 |' in summary or '界面新闻编辑 |' in summary) and not whitelist_hit:
+    decision = evaluate_jiemian_quality(raw_title, title, summary)
+    if not decision.allowed:
         return None
     if not title:
         return None

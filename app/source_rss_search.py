@@ -13,7 +13,8 @@ from dateutil import parser as date_parser
 
 from .dedupe import fingerprint_from_text, normalize_title
 from .models import NewsItem
-from .source_common import PREFERRED_HOST_PRIORITY, WORKSPACE_DIR
+from .quality_rules import get_preferred_host_priority, score_general_host_priority
+from .source_common import WORKSPACE_DIR
 
 
 def fetch_rss_group(start_at: datetime, end_at: datetime, rss_urls: List[str], tz_name: str, priority_floor: int) -> List[NewsItem]:
@@ -45,7 +46,7 @@ def fetch_rss_group(start_at: datetime, end_at: datetime, rss_urls: List[str], t
                 continue
             source_name = _source_name_from_url(url)
             host = link.split('//', 1)[-1].split('/', 1)[0].replace('www.', '')
-            source_priority = PREFERRED_HOST_PRIORITY.get(host, priority_floor)
+            source_priority = get_preferred_host_priority(host, priority_floor)
             items.append(
                 NewsItem(
                     title=title.strip(),
@@ -65,12 +66,7 @@ def score_general_items(items: List[NewsItem]) -> List[NewsItem]:
     scored: List[NewsItem] = []
     for item in items:
         host = item.url.split('//', 1)[-1].split('/', 1)[0].replace('www.', '')
-        if host in PREFERRED_HOST_PRIORITY:
-            item.source_priority = min(item.source_priority, PREFERRED_HOST_PRIORITY[host])
-        elif re.search(r'[A-Za-z]{4,}', item.title) and not re.search(r'[\u4e00-\u9fff]', item.title):
-            item.source_priority = max(item.source_priority, 120)
-        else:
-            item.source_priority = min(item.source_priority, 40)
+        item.source_priority = score_general_host_priority(host, item.title, item.source_priority)
         scored.append(item)
     return [item for item in scored if item.source_priority < 100]
 
