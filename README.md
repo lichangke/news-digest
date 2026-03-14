@@ -61,6 +61,7 @@
 - `logs/` 运行日志与 markdown 输出
 - `state/` SQLite 状态库
 - `PROJECT_LESSONS.md` 项目经验总结
+- `PIPELINE_HARDENING_2026-03-14.md` 本次日报推送链路治理总结
 
 ## 关键脚本
 
