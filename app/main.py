@@ -118,7 +118,7 @@ def main() -> int:
     print(f"run_type={run_type}")
     print(f"window={start_at.isoformat()} -> {end_at.isoformat()}")
     print(f"candidates={len(candidates)} deduped={len(deduped)} existed={len(existed_items)} selected={len(final_items)}")
-    wiki_plan = ensure_node_path(run_type, channel, start_at)
+    wiki_plan = ensure_node_path(run_type, channel, end_at)
 
     print(f"markdown_output={output_path}")
     print(f"debug_output={debug_path}")
@@ -127,7 +127,7 @@ def main() -> int:
     print(f"wiki_month={wiki_plan['month_title']}")
     if args.sync_wiki:
         print("wiki_sync_requested=true")
-        sync_result = sync_markdown(run_type, channel, output_path)
+        sync_result = sync_markdown(run_type, channel, output_path, target_dt=end_at)
         print(f"wiki_sync_status={'ok' if sync_result.get('ok') else 'error'}")
         if sync_result.get('doc_token'):
             print(f"wiki_doc_token={sync_result['doc_token']}")

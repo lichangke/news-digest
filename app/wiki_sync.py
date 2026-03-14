@@ -56,8 +56,8 @@ def ensure_node_path(run_type: str, channel: str, target_dt: datetime | None = N
     }
 
 
-def sync_markdown(run_type: str, channel: str, markdown_path: Path) -> dict:
-    plan = ensure_node_path(run_type, channel)
+def sync_markdown(run_type: str, channel: str, markdown_path: Path, target_dt: datetime | None = None) -> dict:
+    plan = ensure_node_path(run_type, channel, target_dt=target_dt)
     content = markdown_path.read_text(encoding="utf-8")
     result = bridge_sync_markdown(plan["doc_title"], plan["year_title"], plan["month_title"], content)
     result["plan"] = plan
