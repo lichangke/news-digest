@@ -10,10 +10,11 @@ from .channels import get_channel_strategy
 from .config import load_config
 from .dedupe import dedupe_items
 from .fetchers import fetch_candidate_news, make_demo_items
+from .publishers import build_notify_payload, publish_to_wiki
 from .render import render_markdown
 from .storage import article_exists, get_conn, save_articles
 from .time_window import get_time_window
-from .wiki_sync import ensure_node_path, sync_markdown
+from .wiki_sync import ensure_node_path
 
 
 RUN_TYPE_LABELS = {
@@ -129,18 +130,17 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
         }
         result["stages"]["collect"] = {"ok": True}
 
-        if sync_wiki_enabled:
-            sync_result = sync_markdown(run_type, channel, markdown_path, target_dt=end_at)
-            result["stages"]["wiki_sync"] = sync_result
-            result["stages"]["wiki_sync"].setdefault("ok", False)
-        else:
-            result["stages"]["wiki_sync"] = {"ok": False, "skipped": True}
+        result["stages"]["wiki_sync"] = publish_to_wiki(
+            run_type,
+            channel,
+            markdown_path,
+            target_dt=end_at,
+            enabled=sync_wiki_enabled,
+        )
+        result["stages"]["wiki_sync"].setdefault("ok", False)
 
-        if result["stages"]["wiki_sync"].get("ok") and result["stages"]["wiki_sync"].get("url"):
-            result["notify_payload"] = {
-                "message": f"{channel} {'早间' if run_type == 'morning' else '晚间'}新闻已生成：{result['stages']['wiki_sync']['url']}",
-                "url": result["stages"]["wiki_sync"]["url"],
-            }
+        result["notify_payload"] = build_notify_payload(run_type, channel, result["stages"]["wiki_sync"])
+        if result["notify_payload"]:
             result["stages"]["notify"] = {"ok": False, "skipped": False, "ready": True}
         else:
             result["stages"]["notify"] = {"ok": False, "skipped": True, "reason": "wiki_url_unavailable"}

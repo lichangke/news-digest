@@ -11,20 +11,7 @@ TARGET = "user:ou_846a1fe0812c0797c456361b253e1fbc"
 CHANNEL = "feishu"
 
 
-def main() -> int:
-    if len(sys.argv) != 2:
-        print(json.dumps({"ok": False, "error": "usage: send_news_notify.py <result.json>"}, ensure_ascii=False))
-        return 0
-
-    result_path = Path(sys.argv[1])
-    data = json.loads(result_path.read_text(encoding="utf-8"))
-    payload = data.get("notify_payload") or {}
-    message = payload.get("message")
-    if not message:
-        out = {"ok": False, "skipped": True, "reason": "notify_payload_missing"}
-        print(json.dumps(out, ensure_ascii=False))
-        return 0
-
+def send_message(message: str) -> dict:
     try:
         proc = subprocess.run(
             [
@@ -44,13 +31,29 @@ def main() -> int:
             check=False,
         )
     except subprocess.TimeoutExpired:
-        print(json.dumps({"ok": False, "error": f"notify timeout after {TIMEOUT_SECONDS}s", "timeout_seconds": TIMEOUT_SECONDS}, ensure_ascii=False))
-        return 0
+        return {"ok": False, "error": f"notify timeout after {TIMEOUT_SECONDS}s", "timeout_seconds": TIMEOUT_SECONDS}
 
     stdout = (proc.stdout or "").strip()
     stderr = (proc.stderr or "").strip()
     ok = proc.returncode == 0
-    print(json.dumps({"ok": ok, "exit_code": proc.returncode, "stdout": stdout, "stderr": stderr}, ensure_ascii=False))
+    return {"ok": ok, "exit_code": proc.returncode, "stdout": stdout, "stderr": stderr}
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        print(json.dumps({"ok": False, "error": "usage: send_news_notify.py <result.json>"}, ensure_ascii=False))
+        return 0
+
+    result_path = Path(sys.argv[1])
+    data = json.loads(result_path.read_text(encoding="utf-8"))
+    payload = data.get("notify_payload") or {}
+    message = payload.get("message")
+    if not message:
+        out = {"ok": False, "skipped": True, "reason": "notify_payload_missing"}
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    print(json.dumps(send_message(message), ensure_ascii=False))
     return 0
 
 

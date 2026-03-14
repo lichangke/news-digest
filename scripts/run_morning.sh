@@ -31,11 +31,8 @@ run_channel() {
     printf '%s\n' "$notify_json" >> "$LOG_FILE"
     python3 - "$result_path" "$notify_json" <<'PY'
 import json, sys
-path = sys.argv[1]
-notify = json.loads(sys.argv[2])
-data = json.loads(open(path, encoding='utf-8').read())
-data.setdefault('stages', {})['notify'] = notify
-open(path, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, indent=2))
+from app.publishers import record_notify_result
+record_notify_result(sys.argv[1], json.loads(sys.argv[2]))
 PY
     log "notify_recorded channel=$channel result_path=$result_path"
   else
