@@ -171,6 +171,7 @@ def write_doc_content(doc_token: str, content: str, token: str) -> dict[str, Any
 
 def handle_sync(payload: dict[str, Any]) -> dict[str, Any]:
     config = load_config()
+    started_at = time.time()
     token = get_tenant_access_token()
     feishu = config["feishu"]
     space_id = feishu["wiki_space_id"]
@@ -182,7 +183,7 @@ def handle_sync(payload: dict[str, Any]) -> dict[str, Any]:
     ensured = ensure_doc(space_id, year_title, month_title, doc_title, token)
     doc_node = ensured["doc_node"]
     doc_token = doc_node["obj_token"]
-    write_doc_content(doc_token, content, token)
+    write_result = write_doc_content(doc_token, content, token)
     return {
         "ok": True,
         "space_id": space_id,
@@ -192,6 +193,9 @@ def handle_sync(payload: dict[str, Any]) -> dict[str, Any]:
         "doc_token": doc_token,
         "title": ensured["doc_title"],
         "url": f"https://feishu.cn/docx/{doc_token}",
+        "batches": write_result.get("batches"),
+        "blocks": write_result.get("blocks"),
+        "bridge_elapsed_seconds": round(time.time() - started_at, 2),
     }
 
 

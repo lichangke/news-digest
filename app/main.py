@@ -125,8 +125,10 @@ def main() -> int:
     print(f"wiki_doc_title={wiki_plan['doc_title']}")
     print(f"wiki_year={wiki_plan['year_title']}")
     print(f"wiki_month={wiki_plan['month_title']}")
+    print(f"pipeline_status=content_ready")
     if args.sync_wiki:
         print("wiki_sync_requested=true")
+        print("pipeline_stage=wiki_sync_start")
         sync_result = sync_markdown(run_type, channel, output_path, target_dt=end_at)
         print(f"wiki_sync_status={'ok' if sync_result.get('ok') else 'error'}")
         if sync_result.get('doc_token'):
@@ -135,7 +137,17 @@ def main() -> int:
             print(f"wiki_doc_url={sync_result['url']}")
         if sync_result.get('error'):
             print(f"wiki_sync_error={sync_result['error']}")
+        if sync_result.get('timeout_seconds'):
+            print(f"wiki_sync_timeout_seconds={sync_result['timeout_seconds']}")
+        if sync_result.get('bridge_elapsed_seconds') is not None:
+            print(f"wiki_sync_elapsed_seconds={sync_result['bridge_elapsed_seconds']}")
+        if sync_result.get('batches') is not None:
+            print(f"wiki_sync_batches={sync_result['batches']}")
+        if sync_result.get('blocks') is not None:
+            print(f"wiki_sync_blocks={sync_result['blocks']}")
+        print(f"pipeline_stage=wiki_sync_end")
     print(f"run_date={run_date}")
+    print(f"pipeline_status=done")
     return 0
 
 
