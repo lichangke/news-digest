@@ -115,7 +115,8 @@ bash scripts/retry_notify.sh runs/<result>.json
 
 ## 如果你要深入了解
 
-看这两份：
+建议继续看这三份：
 
-- `PROJECT_LESSONS.md`
-- `PIPELINE_HARDENING_2026-03-14.md`
+- `README.md`
+- `ARCHITECTURE_STATUS_2026-03-14.md`
+- `PROJECT_FINALIZATION_TODO.md`
