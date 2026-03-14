@@ -65,10 +65,13 @@
 ## 关键脚本
 
 - `scripts/setup_venv.sh`：初始化虚拟环境
-- `scripts/run_morning.sh`：运行 morning 双通道，并同步飞书知识库 + 自动推送链接
-- `scripts/run_evening.sh`：运行 evening 双通道，并同步飞书知识库 + 自动推送链接
+- `scripts/run_morning.sh`：运行 morning 双通道；内部拆分为生成结果 → 同步知识库 → 独立通知
+- `scripts/run_evening.sh`：运行 evening 双通道；内部拆分为生成结果 → 同步知识库 → 独立通知
 - `scripts/install_cron.sh`：安装 `08:00 / 17:00` 定时任务
 - `scripts/feishu_doc_bridge.py`：本地桥接飞书开放平台 API，实现知识库节点自动确保与正文写入
+- `scripts/send_news_notify.py`：读取单次运行结果 JSON 并发送通知
+- `scripts/retry_notify.sh`：对已有结果文件执行一次补发通知
+- `app/pipeline.py`：结构化流水线入口，产出 `runs/*.json`
 
 ## 手动运行
 
@@ -115,17 +118,30 @@ FEISHU_APP_SECRET=...
 运行后会生成：
 
 - `logs/*.md`：本次输出的日报 markdown
-- `logs/*.debug.md`：分阶段调试日志
+- `logs/*.debug.md`：抓取/去重后的调试日志
+- `logs/morning.log` / `logs/evening.log`：shell 层运行与通知日志
+- `runs/*.json`：单次运行的结构化结果文件
 
-`.debug.md` 至少会记录：
+`runs/*.json` 是新的主排障入口，至少包含：
 
-- `candidates_raw`
-- `after_dedupe`
-- `existed_in_state`
-- `final_output`
-- `ignore_state`
+- 时间窗与开始/结束时间
+- `counts`（抓取、去重、已存在、最终输出）
+- markdown/debug 产物路径
+- `wiki_plan`
+- `stages.collect`
+- `stages.wiki_sync`
+- `stages.notify`
 
-适合快速判断问题出在抓取、过滤、去重还是状态库层。
+如果出现“日报生成了但没推送”，优先看对应 `runs/*.json`：
+
+- `stages.wiki_sync.ok=true` 且 `stages.notify.ok=false`：说明可直接补发通知
+- 补发方式：
+
+```bash
+bash scripts/retry_notify.sh runs/<result>.json
+```
+
+这样无需整条 morning / evening 任务重跑。
 
 ## 当前状态
 

@@ -1,56 +1,49 @@
 #!/usr/bin/env bash
 set -uo pipefail
 cd /root/.openclaw/workspace/news-digest
-mkdir -p logs
-if [ ! -x .venv/bin/python ]; then
-  echo "Missing virtualenv. Run scripts/setup_venv.sh first." >&2
-  exit 1
-fi
+mkdir -p logs runs
 LOG_FILE="logs/morning.log"
-PY_TIMEOUT="120s"
-MSG_TIMEOUT="25s"
+PIPE_TIMEOUT="120s"
 now() { date '+%Y-%m-%dT%H:%M:%S%z'; }
 log() { printf '%s %s\n' "$(now)" "$*" >> "$LOG_FILE"; }
-notify() {
-  local channel="$1"
-  local url="$2"
-  local response
-  log "notify_start channel=$channel"
-  if response=$(timeout "$MSG_TIMEOUT" openclaw message send --channel feishu --target user:ou_846a1fe0812c0797c456361b253e1fbc --message "${channel} 早间新闻已生成：$url" 2>&1); then
-    log "notify_status=ok channel=$channel response=$(printf '%s' "$response" | tr '\n' ' ' | tr '\r' ' ')"
-  else
-    local status=$?
-    log "notify_status=error channel=$channel exit_code=$status response=$(printf '%s' "$response" | tr '\n' ' ' | tr '\r' ' ')"
-  fi
-  log "notify_end channel=$channel"
-}
-run_and_push() {
+run_channel() {
   local channel="$1"
   local output=""
   local status=0
+  local result_path=""
+  local notify_json=""
+
   log "run_start channel=$channel run_type=morning"
-  if ! output=$(timeout "$PY_TIMEOUT" .venv/bin/python -m app.main --run-type morning --channel "$channel" --sync-wiki 2>&1); then
+  if ! output=$(timeout "$PIPE_TIMEOUT" .venv/bin/python -m app.pipeline --run-type morning --channel "$channel" 2>&1); then
     status=$?
   fi
   printf '%s\n' "$output" >> "$LOG_FILE"
+  result_path=$(printf '%s\n' "$output" | python3 -c 'import json,sys; s=sys.stdin.read().strip().splitlines(); print(json.loads(s[-1]).get("result_path","") if s else "")' 2>/dev/null || true)
+
   if [ "$status" -ne 0 ]; then
     log "run_status=error channel=$channel exit_code=$status"
   else
-    log "run_status=ok channel=$channel"
+    log "run_status=ok channel=$channel result_path=$result_path"
   fi
-  local url
-  url=$(printf '%s\n' "$output" | sed -n 's/^wiki_doc_url=//p' | tail -n 1)
-  if [ -n "$url" ]; then
-    notify "$channel" "$url"
+
+  if [ -n "$result_path" ] && [ -f "$result_path" ]; then
+    notify_json=$(python3 scripts/send_news_notify.py "$result_path")
+    printf '%s\n' "$notify_json" >> "$LOG_FILE"
+    python3 - "$result_path" "$notify_json" <<'PY'
+import json, sys
+path = sys.argv[1]
+notify = json.loads(sys.argv[2])
+data = json.loads(open(path, encoding='utf-8').read())
+data.setdefault('stages', {})['notify'] = notify
+open(path, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, indent=2))
+PY
+    log "notify_recorded channel=$channel result_path=$result_path"
   else
-    local sync_status
-    sync_status=$(printf '%s\n' "$output" | sed -n 's/^wiki_sync_status=//p' | tail -n 1)
-    local sync_error
-    sync_error=$(printf '%s\n' "$output" | sed -n 's/^wiki_sync_error=//p' | tail -n 1)
-    log "notify_status=skip channel=$channel reason=no_url wiki_sync_status=${sync_status:-unknown} wiki_sync_error=${sync_error:-}"
+    log "notify_status=skip channel=$channel reason=result_path_missing"
   fi
+
   log "run_end channel=$channel run_type=morning"
 }
-run_and_push general
-run_and_push ai
+run_channel general
+run_channel ai
 exit 0
