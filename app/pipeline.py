@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .channels import get_channel_strategy
 from .config import load_config
 from .dedupe import dedupe_items
 from .fetchers import fetch_candidate_news, make_demo_items
@@ -58,6 +59,7 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
     config = load_config()
     tz_name = config["timezone"]
     channel_config = config["channels"][channel]
+    channel_strategy = get_channel_strategy(channel)
     start_at, end_at = get_time_window(run_type, tz_name)
     run_date = start_at.strftime("%Y-%m-%d")
     started_at = _iso_now(start_at.tzinfo)
@@ -83,7 +85,7 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
     }
 
     try:
-        candidates = make_demo_items(tz_name) if demo else fetch_candidate_news(start_at, end_at, channel_config, tz_name)
+        candidates = make_demo_items(tz_name) if demo else fetch_candidate_news(channel, start_at, end_at, channel_config, tz_name)
         deduped = dedupe_items(candidates, title_threshold=config["dedupe"]["title_similarity_threshold"])
 
         conn = get_conn()
@@ -105,6 +107,10 @@ def build_result(run_type: str, channel: str, *, ignore_state: bool = False, syn
             save_articles(conn, run_date, run_type, final_items)
 
         wiki_plan = ensure_node_path(run_type, channel, end_at)
+        result["channel_strategy"] = {
+            "name": channel_strategy.name,
+            "label_fallback": channel_strategy.label_fallback,
+        }
         result["counts"] = {
             "candidates": len(candidates),
             "deduped": len(deduped),
