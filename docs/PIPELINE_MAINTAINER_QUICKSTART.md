@@ -6,7 +6,7 @@
 
 链路已经拆成三段，不再是一个脆弱长脚本：
 
-1. **生成结果**：`app/pipeline.py`
+1. **生成结果**：`app/pipeline.py`（唯一标准主流程入口）
 2. **同步知识库**：在 pipeline 内执行
 3. **发送通知**：`scripts/send_news_notify.py`
 

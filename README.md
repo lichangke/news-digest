@@ -77,18 +77,30 @@
 
 ## 手动运行
 
+### 标准入口（推荐）
+
+项目当前的**唯一标准主流程入口**是：
+
+```bash
+.venv/bin/python -m app.pipeline --run-type evening --channel general
+```
+
 ### 联调 general
 
 ```bash
-.venv/bin/python -m app.main --run-type evening --channel general --ignore-state
+.venv/bin/python -m app.pipeline --run-type evening --channel general --ignore-state --no-sync-wiki
 ```
 
 ### 手动跑并同步飞书
 
 ```bash
-.venv/bin/python -m app.main --run-type evening --channel general --sync-wiki
-.venv/bin/python -m app.main --run-type evening --channel ai --sync-wiki
+.venv/bin/python -m app.pipeline --run-type evening --channel general
+.venv/bin/python -m app.pipeline --run-type evening --channel ai
 ```
+
+### 兼容入口（legacy）
+
+`app.main` 仍可运行，但现在只作为兼容壳层，内部会委托给 `app.pipeline`。后续新增能力应只接入 `app.pipeline`。
 
 ### 安装 cron
 
