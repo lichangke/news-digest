@@ -62,6 +62,7 @@
 - `state/` SQLite 状态库
 - `PROJECT_LESSONS.md` 项目经验总结
 - `PIPELINE_HARDENING_2026-03-14.md` 本次日报推送链路治理总结
+- `docs/PIPELINE_MAINTAINER_QUICKSTART.md` 面向未来维护者的 1 分钟速读版
 
 ## 关键脚本
 
