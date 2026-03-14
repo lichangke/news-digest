@@ -3,6 +3,7 @@ __pycache__/
 state/*.db
 logs/*.log
 logs/*.md
+runs/*.json
 .env
 
 .venv/

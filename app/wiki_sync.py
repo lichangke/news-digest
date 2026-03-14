@@ -23,7 +23,8 @@ KNOWN_DAILY_SUMMARY_NODE = "PoAgwUBlKi7z7WkEgFJczEfVnnJ"
 def build_doc_title(run_date: datetime, run_type: str, channel: str, channel_config: dict) -> str:
     date_part = run_date.strftime("%Y年%m月%d日")
     if channel == "ai":
-        suffix = channel_config.get("wiki_title_suffix") or f"AI / 大模型{RUN_TYPE_LABELS[run_type]}汇总"
+        title_prefix = channel_config.get("wiki_title_prefix", "AI / 大模型")
+        suffix = f"{title_prefix}{RUN_TYPE_LABELS[run_type]}汇总"
         return f"【{date_part}】{suffix}"
     return f"【{date_part}】{RUN_TYPE_LABELS[run_type]}新闻汇总"
 
